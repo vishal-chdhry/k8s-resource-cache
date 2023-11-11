@@ -1,0 +1,120 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-1
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-2
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-3
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-4
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-5
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-6
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-7
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-8
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-9
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-10
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-11
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-12
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}
+---

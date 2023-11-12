@@ -1,9 +1,6 @@
 package resourcecache
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/dgraph-io/ristretto"
 	"k8s.io/client-go/tools/cache"
 )
@@ -44,7 +41,6 @@ func (l *ListerCache) Get(key string) (*ListerCacheEntry, bool) {
 		return nil, ok
 	}
 
-	fmt.Fprintln(os.Stdout, "found in cache")
 	entry, ok := val.(*ListerCacheEntry)
 	return entry, ok
 }

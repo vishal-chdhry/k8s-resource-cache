@@ -3,7 +3,6 @@ package resourcecache
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -17,7 +16,11 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-type ResourceCache struct {
+type ResourceCache interface {
+	GetLister(resource schema.GroupVersionResource, namespace string) (cache.GenericNamespaceLister, error)
+}
+
+type resourceCache struct {
 	sync.Mutex
 	client *dynamic.DynamicClient
 	cache  *ListerCache
@@ -32,26 +35,24 @@ func GetCacheSelector() (labels.Selector, error) {
 	return selector.Add(*requirement), err
 }
 
-func NewResourceCache(d *dynamic.DynamicClient) (*ResourceCache, error) {
+func NewResourceCache(d *dynamic.DynamicClient) (ResourceCache, error) {
 	lcache, err := NewListerCache()
 	if err != nil {
 		return nil, err
 	}
-	return &ResourceCache{
+	return &resourceCache{
 		client: d,
 		cache:  lcache,
 	}, nil
 }
 
-func (rc *ResourceCache) GetLister(resource schema.GroupVersionResource, namespace string) (cache.GenericNamespaceLister, error) {
+func (rc *resourceCache) GetLister(resource schema.GroupVersionResource, namespace string) (cache.GenericNamespaceLister, error) {
 	key := rc.getKeyForEntry(resource, namespace)
 	lister, ok := rc.cache.Get(key)
 	if ok {
-		fmt.Fprintln(os.Stdout, "From cache")
 		return lister.Lister, nil
 	}
 
-	fmt.Fprintln(os.Stdout, "From client")
 	listerEntry, err := rc.createGenericListerForResource(resource, namespace)
 	if err != nil {
 		return nil, err
@@ -66,7 +67,7 @@ func (rc *ResourceCache) GetLister(resource schema.GroupVersionResource, namespa
 	return listerEntry.Lister, nil
 }
 
-func (rc *ResourceCache) createGenericListerForResource(resource schema.GroupVersionResource, namespace string) (*ListerCacheEntry, error) {
+func (rc *resourceCache) createGenericListerForResource(resource schema.GroupVersionResource, namespace string) (*ListerCacheEntry, error) {
 	selector, err := GetCacheSelector()
 	if err != nil {
 		return nil, err
@@ -88,6 +89,6 @@ func (rc *ResourceCache) createGenericListerForResource(resource schema.GroupVer
 	}, nil
 }
 
-func (rc *ResourceCache) getKeyForEntry(resource schema.GroupVersionResource, namespace string) string {
+func (rc *resourceCache) getKeyForEntry(resource schema.GroupVersionResource, namespace string) string {
 	return strings.Join([]string{resource.String(), ", Namespace=", namespace}, "")
 }

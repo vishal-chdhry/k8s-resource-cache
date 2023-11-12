@@ -14,7 +14,7 @@ var (
 	allNamespaces bool
 	mapper        meta.RESTMapper
 	client        *dynamic.DynamicClient
-	resourceCache *resourcecache.ResourceCache
+	resourceCache resourcecache.ResourceCache
 )
 
 func init() {

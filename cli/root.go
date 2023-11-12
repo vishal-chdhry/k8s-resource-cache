@@ -39,7 +39,10 @@ func init() {
 				return err
 			}
 
-			resourceCache = resourcecache.NewResourceCache(client)
+			resourceCache, err = resourcecache.NewResourceCache(client)
+			if err != nil {
+				return err
+			}
 
 			return nil
 		},

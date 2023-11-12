@@ -1,0 +1,27 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-13
+  namespace: default
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-14
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "false"
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer-15
+  namespace: default
+  labels:
+    cache.kyverno.io/enabled: "true"
+spec:
+  selfSigned: {}

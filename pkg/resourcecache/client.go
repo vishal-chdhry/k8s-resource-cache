@@ -2,6 +2,8 @@ package resourcecache
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -18,7 +20,7 @@ import (
 type ResourceCache struct {
 	sync.Mutex
 	client *dynamic.DynamicClient
-	cache  map[string]cache.GenericNamespaceLister
+	cache  *ListerCache
 }
 
 func GetCacheSelector() (labels.Selector, error) {
@@ -30,37 +32,46 @@ func GetCacheSelector() (labels.Selector, error) {
 	return selector.Add(*requirement), err
 }
 
-func NewResourceCache(d *dynamic.DynamicClient) *ResourceCache {
+func NewResourceCache(d *dynamic.DynamicClient) (*ResourceCache, error) {
+	lcache, err := NewListerCache()
+	if err != nil {
+		return nil, err
+	}
 	return &ResourceCache{
 		client: d,
-		cache:  make(map[string]cache.GenericNamespaceLister),
-	}
+		cache:  lcache,
+	}, nil
 }
 
 func (rc *ResourceCache) GetLister(resource schema.GroupVersionResource, namespace string) (cache.GenericNamespaceLister, error) {
 	key := rc.getKeyForEntry(resource, namespace)
-	lister, ok := rc.cache[key]
+	lister, ok := rc.cache.Get(key)
 	if ok {
-		return lister, nil
+		fmt.Fprintln(os.Stdout, "From cache")
+		return lister.Lister, nil
 	}
 
-	lister, err := rc.createGenericListerForResource(resource, namespace)
+	fmt.Fprintln(os.Stdout, "From client")
+	listerEntry, err := rc.createGenericListerForResource(resource, namespace)
 	if err != nil {
 		return nil, err
 	}
 	rc.Lock()
 	defer rc.Unlock()
 
-	rc.cache[key] = lister
-	return lister, nil
+	ok = rc.cache.Add(key, listerEntry)
+	if !ok {
+		return nil, fmt.Errorf("failed to create a cache entry key=%s", key)
+	}
+	return listerEntry.Lister, nil
 }
 
-func (rc *ResourceCache) createGenericListerForResource(resource schema.GroupVersionResource, namespace string) (cache.GenericNamespaceLister, error) {
+func (rc *ResourceCache) createGenericListerForResource(resource schema.GroupVersionResource, namespace string) (*ListerCacheEntry, error) {
 	selector, err := GetCacheSelector()
 	if err != nil {
 		return nil, err
 	}
-	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(rc.client, time.Minute, namespace, func(opts *metav1.ListOptions) {
+	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(rc.client, 5*time.Second, namespace, func(opts *metav1.ListOptions) {
 		opts.LabelSelector = selector.String()
 	})
 	informer := factory.ForResource(resource)
@@ -71,7 +82,10 @@ func (rc *ResourceCache) createGenericListerForResource(resource schema.GroupVer
 		return nil, errors.New("resource informer cache failed to sync")
 	}
 
-	return informer.Lister().ByNamespace(namespace), nil
+	return &ListerCacheEntry{
+		Lister:         informer.Lister().ByNamespace(namespace),
+		informerStopCh: &stopCh,
+	}, nil
 }
 
 func (rc *ResourceCache) getKeyForEntry(resource schema.GroupVersionResource, namespace string) string {

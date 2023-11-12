@@ -39,7 +39,7 @@ func NewListerCache() (*ListerCache, error) {
 func (l *ListerCache) Add(key string, val *ListerCacheEntry) bool {
 	l.Lock()
 	defer l.Unlock()
-	return l.store.Set(key, val, 1)
+	return l.store.Set(key, val, 0)
 }
 func (l *ListerCache) Get(key string) (*ListerCacheEntry, bool) {
 	l.Lock()

@@ -72,10 +72,10 @@ func (rc *resourceCache) createGenericListerForResource(resource schema.GroupVer
 	if err != nil {
 		return nil, err
 	}
-	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(rc.client, 5*time.Second, namespace, func(opts *metav1.ListOptions) {
+
+	informer := dynamicinformer.NewFilteredDynamicInformer(rc.client, resource, namespace, 5*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, func(opts *metav1.ListOptions) {
 		opts.LabelSelector = selector.String()
 	})
-	informer := factory.ForResource(resource)
 
 	stopCh := make(chan struct{}, 1)
 	go informer.Informer().Run(stopCh)

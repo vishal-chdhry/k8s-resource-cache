@@ -1,16 +1,20 @@
 package resourcecache
 
 import (
+	"context"
+	"sync"
+
 	"github.com/dgraph-io/ristretto"
 	"k8s.io/client-go/tools/cache"
 )
 
 type ListerCacheEntry struct {
-	Lister         cache.GenericNamespaceLister
-	informerStopCh *chan struct{}
+	Lister       cache.GenericNamespaceLister
+	informerStop context.CancelFunc
 }
 
 type ListerCache struct {
+	sync.Mutex
 	store *ristretto.Cache
 }
 
@@ -33,9 +37,13 @@ func NewListerCache() (*ListerCache, error) {
 }
 
 func (l *ListerCache) Add(key string, val *ListerCacheEntry) bool {
+	l.Lock()
+	defer l.Unlock()
 	return l.store.Set(key, val, 1)
 }
 func (l *ListerCache) Get(key string) (*ListerCacheEntry, bool) {
+	l.Lock()
+	defer l.Unlock()
 	val, ok := l.store.Get(key)
 	if !ok {
 		return nil, ok
@@ -47,6 +55,6 @@ func (l *ListerCache) Get(key string) (*ListerCacheEntry, bool) {
 
 func ristrettoOnExit(val interface{}) {
 	if entry, ok := val.(ListerCacheEntry); ok {
-		*entry.informerStopCh <- struct{}{}
+		entry.informerStop()
 	}
 }

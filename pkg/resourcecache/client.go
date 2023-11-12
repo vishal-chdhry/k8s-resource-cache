@@ -1,10 +1,10 @@
 package resourcecache
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,7 +21,6 @@ type ResourceCache interface {
 }
 
 type resourceCache struct {
-	sync.Mutex
 	client *dynamic.DynamicClient
 	cache  *ListerCache
 }
@@ -57,8 +56,6 @@ func (rc *resourceCache) GetLister(resource schema.GroupVersionResource, namespa
 	if err != nil {
 		return nil, err
 	}
-	rc.Lock()
-	defer rc.Unlock()
 
 	ok = rc.cache.Add(key, listerEntry)
 	if !ok {
@@ -77,15 +74,16 @@ func (rc *resourceCache) createGenericListerForResource(resource schema.GroupVer
 		opts.LabelSelector = selector.String()
 	})
 
-	stopCh := make(chan struct{}, 1)
-	go informer.Informer().Run(stopCh)
-	if !cache.WaitForCacheSync(stopCh, informer.Informer().HasSynced) {
+	ctx, cancel := context.WithCancel(context.Background())
+	go informer.Informer().Run(ctx.Done())
+	if !cache.WaitForCacheSync(ctx.Done(), informer.Informer().HasSynced) {
+		cancel()
 		return nil, errors.New("resource informer cache failed to sync")
 	}
 
 	return &ListerCacheEntry{
-		Lister:         informer.Lister().ByNamespace(namespace),
-		informerStopCh: &stopCh,
+		Lister:       informer.Lister().ByNamespace(namespace),
+		informerStop: cancel,
 	}, nil
 }
 

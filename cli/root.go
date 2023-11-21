@@ -47,7 +47,8 @@ func init() {
 			return nil
 		},
 	}
-	rootCmd.AddCommand(getCmd)
+	rootCmd.AddCommand(resourceCmd)
+	rootCmd.AddCommand(externalCmd)
 }
 
 func Execute() error {

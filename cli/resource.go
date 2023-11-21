@@ -8,24 +8,17 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/vishal-chdhry/k8s-resource-cache/pkg/resourcecache"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
-
-type getrequest struct {
-	group     string
-	version   string
-	kind      string
-	namespace string
-}
 
 type promptContent struct {
 	errorMsg string
 	label    string
 }
 
-var getCmd = &cobra.Command{
-	Use:   "get",
+var resourceCmd = &cobra.Command{
+	Use:   "resource",
 	Short: "get resources from cache or source",
 	RunE: func(c *cobra.Command, args []string) error {
 		if len(args) > 0 {
@@ -103,12 +96,7 @@ func getResource() error {
 			return err
 		}
 
-		labelSelector, err := resourcecache.GetCacheSelector()
-		if err != nil {
-			return err
-		}
-
-		ret, err := lister.List(labelSelector)
+		ret, err := lister.List(labels.Everything())
 		if err != nil {
 			return err
 		}

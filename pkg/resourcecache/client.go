@@ -74,7 +74,13 @@ func (rc *resourceCache) DeleteResourceEntry(resource schema.GroupVersionResourc
 
 func (rc *resourceCache) DeleteExternalEntry(url, caBundle string, interval int) error {
 	key := rc.getKeyForExternalEntry(url, caBundle, interval)
-	ok := rc.cache.Delete(key)
+	entry, ok := rc.cache.Get(key)
+	if !ok {
+		return nil
+	}
+	entry.stop()
+
+	ok = rc.cache.Delete(key)
 	if !ok {
 		return fmt.Errorf("failed to delete cache entry key=%s", key)
 	}

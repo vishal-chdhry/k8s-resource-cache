@@ -25,6 +25,7 @@ func NewListerCache() (*Cache, error) {
 		NumCounters: 10 * 100,          // 100 entries
 		BufferItems: 64,
 		OnExit:      ristrettoOnExit,
+		OnEvict:     ristrettoOnEvict,
 	}
 
 	rcache, err := ristretto.NewCache(&config)
@@ -81,5 +82,11 @@ func ristrettoOnExit(val interface{}) {
 		if entry.Lister != nil {
 			entry.stop()
 		}
+	}
+}
+
+func ristrettoOnEvict(item *ristretto.Item) {
+	if entry, ok := item.Value.(*CacheEntry); ok {
+		entry.stop()
 	}
 }

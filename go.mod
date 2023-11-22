@@ -1,6 +1,6 @@
 module github.com/vishal-chdhry/k8s-resource-cache
 
-go 1.21.1
+go 1.21
 
 require (
 	github.com/dgraph-io/ristretto v0.1.1

@@ -56,7 +56,7 @@ func getExternal() error {
 			return err
 		}
 
-		fmt.Fprintln(os.Stdout, "resources found from url:", url, "body:", data)
+		fmt.Fprintln(os.Stdout, "resources found from url:", url, "body:", data.Get())
 		fmt.Fprintln(os.Stdout, "Time taken: ", fmt.Sprint(time.Since(start).Microseconds())+"μs")
 
 		time.Sleep(time.Second * 1)
